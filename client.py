@@ -18,6 +18,8 @@ LIST = []
 CLIENT_DATA_PATH = "client_data"
 path = ""
 runn = False
+if os.path.exists(CLIENT_DATA_PATH)==False:
+    os.mkdir(CLIENT_DATA_PATH)
 
 root = Tk()
 root.title("Client-Server File Transfer")
@@ -32,6 +34,11 @@ progress = ttk.Progressbar(root, orient = HORIZONTAL,
                        length = 300, mode = 'determinate')
 ldownloading = Label(root, text="Downloading... ")
 ldownper = Label(root, text=str(0.0)+"%")
+
+progressup = ttk.Progressbar(root, orient = HORIZONTAL,
+                       length = 300, mode = 'determinate')
+luploading = Label(root, text="Uploading... ")
+lupper = Label(root, text=str(0.0)+"%")
 
 def list_button():
     global client, BLIST, LIST, root
@@ -48,9 +55,44 @@ def pop_up_delete():
 
 def pop_up_download():
     messagebox.showinfo("Downloaded","File downloaded successfully!")
+    ldownloading.place_forget()
+    progress.place_forget()
+    ldownper.place_forget()
 
 def pop_up_upload(filename):
     messagebox.showinfo("Uploaded", filename+" uploaded successfully")
+    luploading.place_forget()
+    progressup.place_forget()
+    lupper.place_forget()
+
+
+def upload():
+    luploading.place(relx=0.2, rely=0.92)
+    progressup.place(relx=0.3, rely=0.92)
+    lupper.place(relx=0.7, rely=0.92)
+    global path
+    cmd="UPLOAD"
+    filename = path.split("/")[-1]
+    filesize = str(os.path.getsize(path))
+    size = os.path.getsize(path)
+    send_data = f"{cmd}@{filename}@{filesize}"
+    client.send(send_data.encode(FORMAT))
+    totalSend = 0
+    with open(f"{path}", "rb") as f:
+        bytesToSend = f.read(1024)
+        while len(bytesToSend) !=0:
+            totalSend += 1024
+            prg = (totalSend/size)*100
+            progressup['value'] = prg
+            lupper.config(text = str(round(prg,2))+"%")
+            client.send(bytesToSend)
+            bytesToSend = f.read(1024)
+    pop_up_upload(filename)
+    list_button()
+
+def upload_button():
+    thread2 = threading.Thread(target=upload)
+    thread2.start()
 
 def show_list():
     global root, lblist, path
@@ -85,28 +127,6 @@ def show_list():
         root.destroy()
         
     
-    def upload_button():
-        global path
-        cmd="UPLOAD"
-        filename = path.split("/")[-1]
-        filesize = str(os.path.getsize(path))
-        send_data = f"{cmd}@{filename}@{filesize}"
-        client.send(send_data.encode(FORMAT))
-        with open(f"{path}", "rb") as f:
-            bytesToSend = f.read(1024)
-            client.send(bytesToSend)
-            
-            while len(bytesToSend) !=0:
-                bytesToSend = f.read(1024)
-                client.send(bytesToSend)
-                # prg = 
-        pop_up_upload(filename)
-        list_button()
-    
-    # bupdate = Button(root, text="Update", bg='#6488D2', fg='white',
-    #                 command=list_button)
-    # bupdate.place(relwidth=0.1, relheight=0.05,relx=0.28, rely=0.73)
-
     lip = Label(root, text="To delete or Download selected items")
     lip.place(relx=.63, rely=0.35)
     
@@ -143,8 +163,6 @@ def chat():
         mydata = mydata.split("@")
         cmd = mydata[0]
         
-       # print("upore",mydata)
-
         if cmd == "DISCONNECTED":
             msg = mydata[1]
             print(f"[SERVER]: {msg}")
@@ -168,9 +186,7 @@ def chat():
             filesize = int(mydata[1])
             filepath = os.path.join(CLIENT_DATA_PATH, name)
             f = open(filepath,'wb')
-            # data = client.recv(1024)
-            # totalRecv = len(data)
-            # f.write(data)
+  
             totalRecv=0
             while totalRecv < filesize:
                 data = client.recv(1024)
@@ -182,9 +198,7 @@ def chat():
 
                 ldownper.config(text = str(round(prg,2)) + "%")
             f.close()
-            ldownloading.place_forget()
-            progress.place_forget()
-            ldownper.place_forget()
+         
             pop_up_download()
     print("Disconnected")
     client.close()

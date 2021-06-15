@@ -18,6 +18,9 @@ STATUS = ""
 CLIENT = 0
 FILES = ""
 
+if os.path.exists(SERVER_DATA_PATH)==False:
+    os.mkdir(SERVER_DATA_PATH)
+
 root = Tk()
 root.title("Server")
 
@@ -50,7 +53,6 @@ def show_files():
 
 def handle_client(conn, addr):
     global CLIENT, STATUS
-    # print(f"[NEW CONNECTION] {addr} connected.")
     STATUS = " > [NEW CONNECTION] " + str(addr) + "connected" + "\n" + STATUS
     lstatus_msg = Label(status, text=STATUS, bg='white')
     lstatus_msg.place(relx=0.05,rely=0.25)
@@ -77,9 +79,7 @@ def handle_client(conn, addr):
             filepath = os.path.join(SERVER_DATA_PATH, name)
             filesize = int(data[2])
             f = open(filepath,'wb')
-            data = conn.recv(1024)
-            totalRecv = len(data)
-            f.write(data)
+            totalRecv = 0
             while totalRecv < filesize:
                 data = conn.recv(1024)
                 totalRecv+=len(data)
@@ -102,22 +102,23 @@ def handle_client(conn, addr):
             conn.send(send_data)
             with open(f"{filepath}", "rb") as f:
                 bytesToSend = f.read(1024)
-                conn.send(bytesToSend)
                 while len(bytesToSend) !=0:
-                    bytesToSend = f.read(1024)
                     conn.send(bytesToSend)
+                    bytesToSend = f.read(1024)
+                    
             show_files()
 
         elif cmd == "DELETE":
             files = os.listdir(SERVER_DATA_PATH)
             send_data = "DELETE@"
             filename = data[1]
+            print(filename)
 
             if len(files) == 0:
                 send_data += "The server directory is empty"
             else:
                 if filename in files:
-                    os.system(f"rm {SERVER_DATA_PATH}/{filename}")
+                    os.system(f"rm \"{SERVER_DATA_PATH}/{filename}\"")
                     send_data += "File deleted successfully."
                     show_files()
                 else:
@@ -142,7 +143,6 @@ def handle_client(conn, addr):
 
             conn.send(data.encode(FORMAT))
 
-    # print(f"[DISCONNECTED] {addr} disconnected")
     STATUS = " > [DISCONNECTED] " + str(addr) + "disconnected" + "\n" + STATUS
     lstatus_msg = Label(status, text=STATUS, bg='white')
     lstatus_msg.place(relx=0.05,rely=0.25)
@@ -212,7 +212,4 @@ bconn = Button(frame, text="Start", bg='black', fg='white',
 bconn.place(relwidth=0.15, relheight=0.7, relx=0.83, rely=0.15)
 
 root.mainloop()
-
-# if __name__ == "__main__":
-#     main()
 
