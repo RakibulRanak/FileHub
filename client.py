@@ -39,6 +39,7 @@ progressup = ttk.Progressbar(root, orient = HORIZONTAL,
                        length = 300, mode = 'determinate')
 luploading = Label(root, text="Uploading... ")
 lupper = Label(root, text=str(0.0)+"%")
+lsize = Label(root, text="")
 
 def list_button():
     global client, BLIST, LIST, root
@@ -58,23 +59,27 @@ def pop_up_download():
     ldownloading.place_forget()
     progress.place_forget()
     ldownper.place_forget()
+    lsize.place_forget()
 
 def pop_up_upload(filename):
     messagebox.showinfo("Uploaded", filename+" uploaded successfully")
     luploading.place_forget()
     progressup.place_forget()
     lupper.place_forget()
+    lsize.place_forget()
 
 
 def upload():
     luploading.place(relx=0.2, rely=0.92)
     progressup.place(relx=0.3, rely=0.92)
     lupper.place(relx=0.7, rely=0.92)
+    lsize.place(relx=0.8, rely=0.92)
     global path
     cmd="UPLOAD"
     filename = path.split("/")[-1]
     filesize = str(os.path.getsize(path))
     size = os.path.getsize(path)
+    lsize.config(text = "Size: " +str(round(size/(1000*1000))) + " MB")
     send_data = f"{cmd}@{filename}@{filesize}"
     client.send(send_data.encode(FORMAT))
     totalSend = 0
@@ -180,10 +185,12 @@ def chat():
             ldownloading.place(relx=0.2, rely=0.92)
             progress.place(relx=0.3, rely=0.92)
             ldownper.place(relx=0.7, rely=0.92)
+            lsize.place(relx=0.8, rely=0.92)
             runn = True
             progress['value'] = 0
             name= mydata[2]
             filesize = int(mydata[1])
+            lsize.config(text = "Size: " +str(round(filesize/(1000*1000),2)) + " MB")
             filepath = os.path.join(CLIENT_DATA_PATH, name)
             f = open(filepath,'wb')
   
