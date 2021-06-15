@@ -1,4 +1,10 @@
-# FileHub - A simple file sharing system
+# Computer Networking Lab (SWE 324)
+
+## FileHub - A simple file sharing system
+## Created By
+MD. RAKIBUL HASAN  (2017831005)
+
+MAHFUZUR RAHMAN EMON (2017831003)
 
 ## Introduction
 
