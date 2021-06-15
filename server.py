@@ -7,8 +7,7 @@ import threading
 HEIGHT = 700
 WIDTH = 800 
 
-#IP = socket.gethostbyname(socket.gethostname())
-IP = "192.168.31.159"
+IP = socket.gethostbyname(socket.gethostname())
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # PORT = 4467
 # ADDR = (IP, PORT)
@@ -18,7 +17,6 @@ SERVER_DATA_PATH = "server_data"
 STATUS = "" 
 CLIENT = 0
 FILES = ""
-LIVE=True
 
 root = Tk()
 root.title("Server")
@@ -108,6 +106,7 @@ def handle_client(conn, addr):
                 while len(bytesToSend) !=0:
                     bytesToSend = f.read(1024)
                     conn.send(bytesToSend)
+            show_files()
 
         elif cmd == "DELETE":
             files = os.listdir(SERVER_DATA_PATH)
@@ -120,10 +119,10 @@ def handle_client(conn, addr):
                 if filename in files:
                     os.system(f"rm {SERVER_DATA_PATH}/{filename}")
                     send_data += "File deleted successfully."
+                    show_files()
                 else:
                     send_data += "File not found."
             conn.send(send_data.encode(FORMAT))
-            show_files()
 
         elif cmd == "LOGOUT":
             CLIENT -= 1
@@ -150,15 +149,13 @@ def handle_client(conn, addr):
     conn.close()
 
 def connection():
-    global CLIENT, LIVE
-    while LIVE:
-        print(LIVE)
+    global CLIENT
+    while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
         text.insert(INSERT, " > [Active Connections] " + str(threading.activeCount() - 1) + " \n")
-        print(LIVE)
 
         CLIENT += 1
         fclient.place(relx=0.05, rely=0.25, relheight = 0.07, relwidth=0.9)
@@ -166,12 +163,12 @@ def connection():
         lcli.place(relx=0.32, rely=0.05, relheight=0.9,relwidth=0.3)
 
 
-
-def conn_button(port):
+def conn_button(port, ip_addr):
     lcon1 = Label(root, text="Server is starting...")
     lcon1.place(relx=0.05, rely=0.15)
     PORT = int(port)
-    ADDR = (IP, PORT)
+    IP=ip_addr
+    ADDR = (ip_addr, PORT)
     server.bind(ADDR)
     server.listen()
     lcon2 = Label(root, text="Server is listening on "+str(IP)+":"+str(PORT))
@@ -200,8 +197,9 @@ def conn_button(port):
 lip = Label(frame, text="IP addr: ")
 lip.place(relwidth=0.12, relheight=0.5, relx=0.01, rely=0.25)
 
-lip_addr = Label(frame, text=IP)
+lip_addr = Entry(frame, text=IP)
 lip_addr.place(relwidth=0.25, relheight=0.7, relx=0.15, rely=0.15)
+lip_addr.insert(END, IP)
 
 lport = Label(frame, text="Port: ")
 lport.place(relwidth=0.12, relheight=0.5, relx=0.42, rely=0.25)
@@ -210,18 +208,8 @@ port = Entry(frame)
 port.place(relwidth=0.25, relheight=0.7, relx=0.56, rely=0.15)
 
 bconn = Button(frame, text="Start", bg='black', fg='white',
-                    command=lambda: conn_button(port.get()))
+                    command=lambda: conn_button(port.get(),lip_addr.get()))
 bconn.place(relwidth=0.15, relheight=0.7, relx=0.83, rely=0.15)
-
-def server_close():
-    global server,LIVE
-    LIVE = False
-    server.close()
-
-bconn = Button(root, text="Close ", bg='red', fg='white',
-                    command= server_close)
-bconn.place(relwidth=0.15, relheight=0.7, relx=0.83, rely=0.15)
-
 
 root.mainloop()
 

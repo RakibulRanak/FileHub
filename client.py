@@ -67,6 +67,8 @@ def show_list():
     def select_button():
         global path
         path = filedialog.askopenfilename()
+        lfileupload = Label(root, text=path.split("/")[-1])
+        lfileupload.place(relx=0.35, rely=0.83)
         print(path)
 
     def logout():
@@ -112,14 +114,14 @@ def show_list():
 
     bselect = Button(root, text="Select File", bg='#7E8050', fg='white',
                     command=select_button)
-    bselect.place(relwidth=0.50, relheight=0.05,relx=0.22, rely=0.82)
+    bselect.place(relwidth=0.12, relheight=0.05,relx=0.22, rely=0.82)
 
     bupload = Button(root, text="Upload", bg='#033806', fg='white',
                     command=upload_button)
     bupload.place(relwidth=0.12, relheight=0.05,relx=0.73, rely=0.82)
 
-    blogout = Button(root, text="Logout", bg='red', fg='white',command=logout)
-    blogout.place(relwidth=0.12, relheight=0.05, relx=0.45, rely=0.90)
+    blogout = Button(frame, text="Logout", bg='red', fg='white',command=logout)
+    blogout.place(relwidth=0.12, relheight=0.7, relx=0.87, rely=0.15)
 
 
 
@@ -183,17 +185,17 @@ lip = Label(frame, text="IP addr: ")
 lip.place(relwidth=0.12, relheight=0.5, relx=0.01, rely=0.25)
 
 ip_addr = Entry(frame)
-ip_addr.place(relwidth=0.25, relheight=0.7, relx=0.15, rely=0.15)
+ip_addr.place(relwidth=0.20, relheight=0.7, relx=0.15, rely=0.15)
 
 lport = Label(frame, text="Port: ")
-lport.place(relwidth=0.12, relheight=0.5, relx=0.42, rely=0.25)
+lport.place(relwidth=0.12, relheight=0.5, relx=0.37, rely=0.25)
 
 port = Entry(frame)
-port.place(relwidth=0.25, relheight=0.7, relx=0.56, rely=0.15)
+port.place(relwidth=0.20, relheight=0.7, relx=0.51, rely=0.15)
 
 bconn = Button(frame, text="Connect", bg='black', fg='white',
                     command=lambda: conn_button(ip_addr.get(), port.get()))
-bconn.place(relwidth=0.15, relheight=0.7, relx=0.83, rely=0.15)
+bconn.place(relwidth=0.12, relheight=0.7, relx=0.74, rely=0.15)
     
 root.mainloop()
 
