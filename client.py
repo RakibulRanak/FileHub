@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter import ttk
 import threading
 import socket
 import os
@@ -16,6 +17,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 LIST = []
 CLIENT_DATA_PATH = "client_data"
 path = ""
+runn = False
 
 root = Tk()
 root.title("Client-Server File Transfer")
@@ -25,6 +27,11 @@ canvas.pack()
 
 frame = Frame(root, bg='grey')
 frame.place(relx=0.05, rely=0.05, relheight = 0.07, relwidth=0.9)
+
+progress = ttk.Progressbar(root, orient = HORIZONTAL,
+                       length = 300, mode = 'determinate')
+ldownloading = Label(root, text="Downloading... ")
+ldownper = Label(root, text=str(0.0)+"%")
 
 def list_button():
     global client, BLIST, LIST, root
@@ -88,9 +95,11 @@ def show_list():
         with open(f"{path}", "rb") as f:
             bytesToSend = f.read(1024)
             client.send(bytesToSend)
+            
             while len(bytesToSend) !=0:
                 bytesToSend = f.read(1024)
                 client.send(bytesToSend)
+                # prg = 
         pop_up_upload(filename)
         list_button()
     
@@ -126,7 +135,7 @@ def show_list():
 
 
 def chat():
-    global client, LIST
+    global client, LIST, progress, runn
 
     while True:
         data = client.recv(SIZE).decode(FORMAT)
@@ -150,22 +159,33 @@ def chat():
             LIST = msg.split('\n')
             show_list()
         elif cmd == "SAVE":
+            ldownloading.place(relx=0.2, rely=0.92)
+            progress.place(relx=0.3, rely=0.92)
+            ldownper.place(relx=0.7, rely=0.92)
+            runn = True
+            progress['value'] = 0
             name= mydata[2]
             filesize = int(mydata[1])
             filepath = os.path.join(CLIENT_DATA_PATH, name)
             f = open(filepath,'wb')
-            data = client.recv(1024)
-            totalRecv = len(data)
-            f.write(data)
+            # data = client.recv(1024)
+            # totalRecv = len(data)
+            # f.write(data)
+            totalRecv=0
             while totalRecv < filesize:
                 data = client.recv(1024)
                 totalRecv+=len(data)
                 f.write(data)
-                # print("{0:.2f}".format((totalRecv/float(filesize))
-                # *100)+"% DONE")
-            f.close()
-            pop_up_download()
+                prg = totalRecv/float(filesize)*100
+                print(prg)
+                progress['value'] = prg
 
+                ldownper.config(text = str(round(prg,2)) + "%")
+            f.close()
+            ldownloading.place_forget()
+            progress.place_forget()
+            ldownper.place_forget()
+            pop_up_download()
     print("Disconnected")
     client.close()
 

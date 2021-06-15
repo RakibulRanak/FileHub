@@ -84,8 +84,8 @@ def handle_client(conn, addr):
                 data = conn.recv(1024)
                 totalRecv+=len(data)
                 f.write(data)
-                # print("{0:.2f}".format((totalRecv/float(filesize))
-                # *100)+"% DONE")
+                print("{0:.2f}".format((totalRecv/float(filesize))
+                *100)+"% DONE")
             f.close()
             print("UPLOAD Completed")
             send_data = "OK@File uploaded successfully."
